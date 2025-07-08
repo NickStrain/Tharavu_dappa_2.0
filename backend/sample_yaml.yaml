@@ -1,0 +1,22 @@
+ nodes:
+  load_data:
+    function: read_csv
+    params:
+      file_path: E:/tharavu-dappa/v2/chennai_reservoir_levels.csv
+      separator: ","
+    vars: df
+  drop_nulls_task:
+    function: drop_nans
+    params:
+      df: df  
+    vars: df_cleaned
+    dependencies:
+      - load_data
+  rename_task:
+    function: rename
+    params:
+      df: df_cleaned  
+      mapping: {"POONDI": "PUNDA"}
+    vars: renamed_df
+    dependencies:
+      - drop_nulls_task
