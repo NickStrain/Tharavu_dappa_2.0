@@ -119,7 +119,7 @@ nodes:
     function: rename
     params:
       df: df_cleaned
-      mapping: {"POONDI": "PUNDA"}
+      mapping: {"POONDI": "PUU"}
     vars: renamed_df
     dependencies:
       - drop_nulls_task
