@@ -51,6 +51,7 @@ class DataReader:
         return None
 
     def read_html(self, path: str, **kwargs) -> Optional[List[pd.DataFrame]]:
+        """reads a html file"""
         try:
             return pd.read_html(path, **kwargs)
         except Exception as e:
