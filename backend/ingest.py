@@ -1,4 +1,6 @@
 import polars as pl
+import pandas as pd
+import sqlite3
 import chardet
 from pathlib import Path
 from typing import List, IO, Dict, Any, Union, Optional, Callable
@@ -11,7 +13,7 @@ class DataReader:
     """
     Handles data ingestion from multiple sources using Polars and Pandas.
     """
-    
+
     def read_csv(self, file_path: str, separator: Optional[str] = ",", **kwargs) -> Optional[pl.DataFrame]:
         """Reads a CSV file into a Polars DataFrame."""
         try:
@@ -48,10 +50,24 @@ class DataReader:
             print(f"Error reading JSON: {e}")
         return None
 
+    def read_html(self, path: str, **kwargs) -> Optional[List[pd.DataFrame]]:
+        try:
+            return pd.read_html(path, **kwargs)
+        except Exception as e:
+            print(f"Error reading HTML: {e}")
+        return None
+
     def read_database(self, query: str, **kwargs) -> Optional[pl.DataFrame]:
         """Executes a SQL query and returns a Polars DataFrame."""
         try:
             return pl.read_database(query, **kwargs)
+        except Exception as e:
+            print(f"Error executing query: {e}")
+        return None
+
+    def read_sql(self, query: str, db_path: str, **kwargs) -> Optional[pd.DataFrame]:
+        try:
+            return pd.read_sql_query(query, sqlite3.connect(db_path), **kwargs)
         except Exception as e:
             print(f"Error executing query: {e}")
         return None
@@ -88,7 +104,21 @@ class FrameCleaner:
         except Exception as e:
             print(f"Error renaming columns: {e}")
             return df  # Return the original DataFrame if rename fails
-        
+
+    def select_rows_loc(self, df: pd.DataFrame, condition) -> Optional[pd.DataFrame]:
+        try:
+            return df.loc[condition]
+        except Exception as e:
+            print(f"Error selecting rows: {e}")
+        return None
+
+    def select_by_position(self, df: pd.DataFrame, rows, cols) -> Optional[pd.DataFrame]:
+        try:
+            return df.iloc[rows, cols]
+        except Exception as e:
+            print(f"Error using df.iloc: {e}")
+        return None
+
 
 class DataCleaner:
     """
@@ -101,7 +131,7 @@ class DataCleaner:
         except Exception as e:
             print(f"Error dropping NaNs: {e}")
             return df  # Return the original DataFrame if dropping NaNs fails
-        
+
 
     def drop_nan(self, df: pl.DataFrame, subset: Optional[Union[str, list[str]]] = None) -> pl.DataFrame:
         """Drops all NaN values from the DataFrame."""
@@ -110,7 +140,15 @@ class DataCleaner:
         except Exception as e:
             print(f"Error dropping NaNs: {e}")
             return df  # Return the original DataFrame if dropping NaNs fails
-        
+
+    def as_type(self, df: pd.DataFrame, schema: dict) -> Optional[pd.DataFrame]:
+        try:
+            return df.astype(schema)
+        except Exception as e:
+            print(f"Error casting columns: {e}")
+        return None
+
+
 
 
 cleaner = DataCleaner()
@@ -120,7 +158,13 @@ renamer = FrameCleaner()
 FUNCTION_MAP = {
     "read_csv": reader.read_csv,
     "drop_nans": cleaner.drop_nans,
-    "rename": renamer.rename
+    "rename": renamer.rename,
+    "read_sql":reader.read_sql,
+    "read_html":reader.read_html,
+    "as_type":cleaner.as_type,
+    "select_rows_loc":renamer.select_rows_loc,
+    "select_by_position":renamer.select_by_position,
+
 }
 
 
@@ -131,17 +175,17 @@ def resolve_task_args(args):
     resolved_args = {}
     for key, value in args.items():
         if isinstance(value, str) and value in workflow_outputs:
-            resolved_args[key] = workflow_outputs[value]  
+            resolved_args[key] = workflow_outputs[value]
         else:
-            resolved_args[key] = value  
+            resolved_args[key] = value
     return resolved_args
 
 def execute_task(single_node,i, task_number):
-  
+
     # task_id = nodes["id"]
     # function_name = task["function"]
-    
-    task_id = i 
+
+    task_id = i
     function_name = single_node["function"]
 
     if function_name not in FUNCTION_MAP:
@@ -149,9 +193,9 @@ def execute_task(single_node,i, task_number):
         return None
 
     func = FUNCTION_MAP[function_name]
-    args = resolve_task_args(single_node["params"])  
+    args = resolve_task_args(single_node["params"])
     # args = single_node["params"]
-    
+
     try:
         if "df" in args and not isinstance(args["df"], pl.DataFrame):
             raise TypeError(f"[TASK {task_number}] Error: Expected 'df' to be a Polars DataFrame, but got {type(args['df'])}")
@@ -161,9 +205,9 @@ def execute_task(single_node,i, task_number):
         print(result)
         print(f"[TASK {task_number}] {task_id} completed.")
 
-        
+
         if "vars" in single_node and isinstance(single_node["vars"], str):
-            workflow_outputs[single_node["vars"]] = result  
+            workflow_outputs[single_node["vars"]] = result
             print(f"[TASK {task_number}] Output saved as '{single_node['vars']}'")
 
         return result
@@ -172,12 +216,12 @@ def execute_task(single_node,i, task_number):
     return None
 
 def execute_workflow(yamlstring):
-    
+
     # Load YAML
     # with open(yaml_path, "r") as f:
     #     workflow = yaml.safe_load(f)
 
- 
+
     workflow = yaml.safe_load(yamlstring)
     nodes = workflow['nodes']
     # print(nodes)
@@ -188,11 +232,11 @@ def execute_workflow(yamlstring):
         result = execute_task(single_node,i, task_counter)
         task_counter += 1
 
-        
+
         # if result is not None and "vars" in task:
         #     workflow_outputs[task["vars"]] = result
-    
-    return None   
+
+    return None
 
 
 # workflow_outputs = execute_workflow("sample.yaml")
