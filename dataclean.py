@@ -35,7 +35,7 @@ class Datacleaner:
 
                          # library          check null                    drop na
                          # pandas            df.isnull                   df.dropna()
-                         # polars       df.select(pl.all().is_null())    df.drop_nulls()[5:38 AM, 7/16/2025] Nandhu♥️: import pandas as pd
+                         # polars       df.select(pl.all().is_null())    df.drop_nulls()
 
     
     """
