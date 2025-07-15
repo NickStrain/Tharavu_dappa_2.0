@@ -100,3 +100,103 @@ class Datacleaner:
         except Exception as e:
             print(f"[drop_duplicates] Error during duplicate removal: {e}")
             raise  
+
+"""
+Perform groupwisw transforms
+"""
+def transform(self, df, func, axis=0):
+    try:
+        if isinstance(df, pd.DataFrame):
+            return df.transform(func, axis=axis)
+        elif isinstance(df, pl.DataFrame):
+            # Polars doesn't have a direct equivalent to pandas' transform method
+            if axis == 0:
+                return df.apply(func, axis=0)
+            elif axis == 1:
+                return df.apply(func, axis=1)
+            else:
+                raise ValueError("Invalid axis")
+        else:
+            raise TypeError("Unsupported DataFrame type")
+    except Exception as e:
+        print(f"[transform] Error during transformation: {e}")
+        raise  
+
+"""
+Subset rows or columns by label or regex
+"""
+def filter(self, df, condition):
+    try:
+        if isinstance(df, pd.DataFrame):
+            return df[condition]
+        elif isinstance(df, pl.DataFrame):
+            return df.filter(condition)
+        else:
+            raise TypeError("Unsupported DataFrame type")
+    except Exception as e:
+        print(f"[filter] Error during filtering: {e}")
+        raise  
+
+"""
+Randomly sample rows
+"""
+def sample(self, df, n=None, frac=None, random_state=None):
+    try:
+        if isinstance(df, pd.DataFrame):
+            return df.sample(n=n, frac=frac, random_state=random_state)
+        elif isinstance(df, pl.DataFrame):
+            if n is not None:
+                return df.sample(n=n, seed=random_state)
+            elif frac is not None:
+                return df.sample(frac=frac, seed=random_state)
+            else:
+                raise ValueError("Either n or frac must be specified")
+        else:
+            raise TypeError("Unsupported DataFrame type")
+    except Exception as e:
+        print(f"[sample] Error during sampling: {e}")
+        raise  
+"""
+Count unique values in a Series
+"""
+def value_counts(self, series):
+    try:
+        if isinstance(series, pd.Series):
+            return series.value_counts()
+        elif isinstance(series, pl.Series):
+            return series.value_counts()
+        else:
+            raise TypeError("Unsupported Series type")
+    except Exception as e:
+        print(f"[value_counts] Error during value counting: {e}")
+        raise  
+
+"""
+Array of unique values
+"""
+def unique(self, series):
+    try:
+        if isinstance(series, pd.Series):
+            return series.unique()
+        elif isinstance(series, pl.Series):
+            return series.unique().to_numpy()  #to_numpy() to ensure the op is numpy array,similar to pd's unique
+        else:
+            raise TypeError("Unsupported Series type")
+    except Exception as e:
+        print(f"[unique] Error during getting unique values: {e}")
+        raise  
+
+"""
+Pairwise correlation
+"""
+def corr(self, df):
+    try:
+        if isinstance(df, pd.DataFrame):
+            return df.corr()
+        elif isinstance(df, pl.DataFrame):
+            return df.to_pandas().corr() # polar df doesn't have built in corr method  , so using to_pandas
+        else:
+            raise TypeError("Unsupported DataFrame type")
+    except Exception as e:
+        print(f"[corr] Error during correlation calculation: {e}")
+        raise  
