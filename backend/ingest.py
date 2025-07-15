@@ -8,6 +8,7 @@ import yaml
 import inspect
 from collections import defaultdict
 import concurrent.futures
+import unicodedata
 
 class DataReader:
     """
@@ -120,6 +121,21 @@ class FrameCleaner:
             print(f"Error using df.iloc: {e}")
         return None
 
+    """Custom dataFrame cleaning operations"""
+    def drop_constant_columns(self, df: pd.DataFrame, tol=0.0) -> Optional[pd.DataFrame]:
+        try:
+            return df.loc[:, df.nunique(dropna=False) > tol]
+        except Exception as e:
+            print(f"Error dropping constant columns: {e}")
+        return None
+
+    def clean_column_names(self, df: pd.DataFrame) -> Optional[pd.DataFrame]:
+        try:
+            return df.rename(columns=lambda col: col.strip().lower().replace(" ", "_"))
+        except Exception as e:
+            print(f"Error cleaning column names: {e}")
+        return None
+
 
 class DataCleaner:
     """
@@ -149,6 +165,39 @@ class DataCleaner:
             print(f"Error casting columns: {e}")
         return None
 
+    """Cleanup applied to text fields"""
+
+    def normalize_unicode(self, df: pd.DataFrame, columns=None) -> Optional[pd.DataFrame]:
+        try:
+            for col in df.columns:
+                if df[col].dtype == "object" and (columns is None or col in columns):
+                    df[col] = df[col].apply(lambda x: unicodedata.normalize("NFKC", x) if isinstance(x, str) else x)
+            return df
+        except Exception as e:
+            print(f"Error normalizing Unicode: {e}")
+        return None
+
+    def trim_whitespace(self, df: pd.DataFrame, columns=None) -> Optional[pd.DataFrame]:
+        try:
+            return df.apply(lambda col: col.str.strip() if col.dtype == "object" and (columns is None or col.name in columns) else col)
+        except Exception as e:
+            print(f"Error trimming whitespace: {e}")
+        return None
+
+    def fill_missing_with_group_stat(self, df: pd.DataFrame, group_cols, target_col, stat='mean') -> Optional[pd.DataFrame]:
+        try:
+            if stat == 'mean':
+                return df.copy().fillna({target_col: df.groupby(group_cols)[target_col].transform('mean')})
+            elif stat == 'median':
+                return df.copy().fillna({target_col: df.groupby(group_cols)[target_col].transform('median')})
+            elif stat == 'mode':
+                return df.copy().fillna({target_col: df.groupby(group_cols)[target_col].transform(lambda x: x.mode().iloc[0] if not x.mode().empty else x)})
+            else:
+                print(f"Unsupported stat: {stat}")
+                return None
+        except Exception as e:
+            print(f"Error filling missing values: {e}")
+        return None
 
 
 
@@ -165,6 +214,11 @@ FUNCTION_MAP = {
     "as_type":cleaner.as_type,
     "select_rows_loc":renamer.select_rows_loc,
     "select_by_position":renamer.select_by_position,
+    "fill_missing_with_group_stat":cleaner.fill_missing_with_group_stat,
+    "clean_column_names":renamer.clean_column_names,
+    "drop_constant_columns":renamer.drop_constant_columns,
+    "trim_whitespace":cleaner.trim_whitespace,
+    "normalize_unicode":cleaner.normalize_unicode,
 
 }
 
