@@ -111,7 +111,62 @@ class DataCleaner:
             print(f"Error dropping NaNs: {e}")
             return df  # Return the original DataFrame if dropping NaNs fails
         
+   """ To  Write a DataFrame to CSV"""
+    def to_csv(self, df : pd.DataFrame, file_path: str(), separator: Optional[str] = ',', **kwargs):
+    """ write a dataframe to a csv file """
+     try:
+        with open(file_path, 'w') as file:
+             return df.to_csv(file, index=True, sep=separator, **kwargs)
+     except Exception as e:
+         print(f"Error on writing to CSV file: {e}")
+         return False
 
+
+
+    """ To write a DataFrame to Excel"""
+    def to_excel(self, df: pd.DataFrame, file_path: str(), **kwargs):
+        """ write a dataframe to an excel file """  
+        try:git
+            with pd.ExcelWriter(file_path, engine='xlsxwriter') as file:
+                return df.to_excel(file, index=True, **kwargs)
+        except Exception as e:
+             print(f"Error on writing to Excel file: {e}")
+             return False
+
+
+
+    """ To write a DataFrame to JSON"""
+    def to_json(self, df: pd.DataFrame, file_path: str(), **kwargs):
+        """ write a dataframe to a json file """
+        try:
+            with open(file_path, 'w') as file:
+                return df.to_json(file, orient='columns', lines=True, **kwargs)
+        except Exception as e:
+            print(f"Error on writing to JSON file: {e}")
+            return False
+
+
+
+    """ To write a DataFrame to SQL"""
+    def to_sql(self, df: pd.DataFrame, table_name: str, con: str, **kwargs):
+        """ write a dataframe to a sql table """
+        try:
+            with pd.SQLAlchemy.connect(con) as conn:
+                return df.to_sql(table_name, conn, if_exists='replace', index=True, **kwargs)
+        except Exception as e:
+            print(f"Error on writing to SQL table: {e}")
+            return False
+
+
+
+    """ To Return first n rows"""
+    def head(self, df: pd.DataFrame, file_path: str, n: int = 5, **kwargs):
+        """ Return the first n rows of the DataFrame """
+        try:
+            return df.head(n)
+        except Exception as e:
+            print(f"Error on reading file: {e}")
+            return None
 
 cleaner = DataCleaner()
 reader = DataReader()
@@ -120,7 +175,12 @@ renamer = FrameCleaner()
 FUNCTION_MAP = {
     "read_csv": reader.read_csv,
     "drop_nans": cleaner.drop_nans,
-    "rename": renamer.rename
+    "rename": renamer.rename,
+    "to_csv": reader.to_csv,
+    "to_excel": reader.to_excel,
+    "to_json": reader.to_json,  
+    "to_sql": reader.to_sql,
+    "head": reader.head
 }
 
 
