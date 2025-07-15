@@ -77,6 +77,47 @@ class DataReader:
         except Exception as e:
             print(f"Error saving pickle: {e}")
 
+     """TO DISPLAY THE LAST n ROWS"""
+    def tail(self,file_path:str() separator:optional[str] **kwargs)
+    try:
+        with open(file_path,'r')
+        return df.tail(file,index=True)
+    except Exception as e:
+        print(f"Error on opening the file to display the last n rows:{e}")
+
+    def info(self,file_path:str() separator:optional[str] **kwargs)
+    """TO DISPLAY THE INFORMATION OF THE FILE"""
+    try:
+        with open(file_path,'r')
+        return df.info(file,index=True)
+    except Exception as e:
+        print(f"Error on displaying the information of the file:{e}")
+
+    def describe(self,file_path:str() separator:optional[str] **kwargs)
+    """TO DESCRIBE THE FILE"""
+    try:
+        with open(file_path,'r')
+        return df.describe(file,index=True)
+    except Exception as e:
+        print(f"Error on describing the file:{e}")
+
+    def shape(self,file_path:str() separator:optional[str] **kwargs)
+    """TO DISPLAY THE SHAPE OF THE FILE"""
+    try:
+        with open(file_path,'r')
+        return df.shape(file,index=True)
+    except Exception as e:
+        print(f"Error on displaying the shape (rows&columns)of the file:{e}")
+    
+    def dtypes(self,file_path:str() separator:optional[str] **kwargs)
+    """TO DISPLAY THE DATATYPES OF THE FILE"""
+    try:
+        with open(file_path,'r')
+        return df.dtypes(file,index=True)
+    except Exception as e:
+        print(f"Error on displaying the datatypes of the file:{e}")
+    
+
 class FrameCleaner:
     """
     Handles DataFrame column renaming operations.
@@ -120,7 +161,12 @@ renamer = FrameCleaner()
 FUNCTION_MAP = {
     "read_csv": reader.read_csv,
     "drop_nans": cleaner.drop_nans,
-    "rename": renamer.rename
+    "rename": renamer.rename,
+    "tail":reader.tail,
+    "info":reader.info,
+    "describe":reader.describe,
+    "dtypes":reader.dtypes,
+    "shape":reader.shape,
 }
 
 
