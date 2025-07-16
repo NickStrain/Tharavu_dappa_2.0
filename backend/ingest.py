@@ -78,44 +78,50 @@ class DataReader:
             print(f"Error saving pickle: {e}")
 
      """TO DISPLAY THE LAST n ROWS"""
-    def tail(self,file_path:str() separator:optional[str] **kwargs)
+    def tail(self,df:pd.DataFrame,file_path: str,n:int =7 **kwargs)
     try:
         with open(file_path,'r')
-        return df.tail(file,index=True)
+        return df.tail(n)
     except Exception as e:
         print(f"Error on opening the file to display the last n rows:{e}")
+        return None
 
     def info(self,file_path:str() separator:optional[str] **kwargs)
     """TO DISPLAY THE INFORMATION OF THE FILE"""
     try:
         with open(file_path,'r')
-        return df.info(file,index=True)
+        return df.info()
     except Exception as e:
         print(f"Error on displaying the information of the file:{e}")
+        return None
 
     def describe(self,file_path:str() separator:optional[str] **kwargs)
     """TO DESCRIBE THE FILE"""
     try:
         with open(file_path,'r')
-        return df.describe(file,index=True)
+        return df.describe()
     except Exception as e:
         print(f"Error on describing the file:{e}")
+        return None
 
     def shape(self,file_path:str() separator:optional[str] **kwargs)
     """TO DISPLAY THE SHAPE OF THE FILE"""
     try:
         with open(file_path,'r')
-        return df.shape(file,index=True)
+        return df.shape()
     except Exception as e:
         print(f"Error on displaying the shape (rows&columns)of the file:{e}")
-    
+        return None
+
+
     def dtypes(self,file_path:str() separator:optional[str] **kwargs)
     """TO DISPLAY THE DATATYPES OF THE FILE"""
     try:
         with open(file_path,'r')
-        return df.dtypes(file,index=True)
+        return df.dtypes()
     except Exception as e:
         print(f"Error on displaying the datatypes of the file:{e}")
+        return None
     
 
 class FrameCleaner:
@@ -151,7 +157,50 @@ class DataCleaner:
         except Exception as e:
             print(f"Error dropping NaNs: {e}")
             return df  # Return the original DataFrame if dropping NaNs fails
+
         
+    def groupby(self,df:pd.DataFrame,by:list,aggfunc:str='mean',**kwargs)
+      """To groupby the aggreagate data"""
+        try:
+            return df.groupby(by).agg(aggfunc,**kwargs)
+        except Exception as e:
+            print(f"Error on groupby the file:{e}")
+            return None 
+
+
+    def pivot(self,df:pd.DataFrame,index:list,columns,list,values:str,**kwargs)
+      """To pivot(reshape) the data"""
+       try:
+          return df.pivot(index=index,columns=columns,values=values)
+       except Exception as e:
+          print(f"Error in reshape the file:{e}")
+          return None
+
+
+    def pivottable(self,df:pd.DataFram,index:list,columns:list,values:str,aggfunc:str='mean',**kwargs)
+        """To create the pivot table for aggregate data"""
+        try:
+            return pd.pivot_table(df,index=index,columns=columns,values=values,aggfunc=aggfunc,**kwargs)
+        except Exception as e:
+            print(f"Error on creating the pivot table:{e}")
+            return None
+   
+   
+    def melt(self,df:DataFrame,id_vars:list,value_vars:list,var_name:str='variable',value_name:str='value',**kwargs)
+    """To transform the data to wide long"""
+        try:
+            return pd.melt(df,id_vars=id_vars,value_name=value_vars,var_name=var_name,value_name=value_name,**kwargs)
+        except Exception as e:
+            print(f"Error on thr file to perform the function:{e}")
+            return None
+
+    def stack(self,df:DataFrame,by:str,**kwargs)
+      """To stack the columns """
+        try:
+            return df.stack(**kwargs)
+        except Exception as e:
+            print(f"Error on stacking the columns:{e}")
+            return None
 
 
 cleaner = DataCleaner()
@@ -167,6 +216,10 @@ FUNCTION_MAP = {
     "describe":reader.describe,
     "dtypes":reader.dtypes,
     "shape":reader.shape,
+    "groupby":cleaner.groupby,
+    "pivot":cleaner.pivot,
+    "pivottable":cleaner.melt,
+    "stack":cleaner.stack,
 }
 
 
