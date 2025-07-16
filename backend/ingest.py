@@ -77,41 +77,9 @@ class DataReader:
         except Exception as e:
             print(f"Error saving pickle: {e}")
 
-class FrameCleaner:
-    """
-    Handles DataFrame column renaming operations.
-    """
-    def rename(self, df: pl.DataFrame, mapping: Union[Dict[str, str], Callable[[str], str]], strict: bool = True) -> pl.DataFrame:
-        """Renames columns in a Polars DataFrame."""
-        try:
-            return df.rename(mapping, strict=strict)
-        except Exception as e:
-            print(f"Error renaming columns: {e}")
-            return df  # Return the original DataFrame if rename fails
-        
 
-class DataCleaner:
-    """
-    Handles NaN removal operations for Polars DataFrames.
-    """
-    def drop_nans(self, df: pl.DataFrame, subset: Optional[Union[str, list[str]]] = None) -> pl.DataFrame:
-        """Drops all NaN values from the DataFrame."""
-        try:
-            return df.drop_nans(subset)
-        except Exception as e:
-            print(f"Error dropping NaNs: {e}")
-            return df  # Return the original DataFrame if dropping NaNs fails
-        
 
-    def drop_nan(self, df: pl.DataFrame, subset: Optional[Union[str, list[str]]] = None) -> pl.DataFrame:
-        """Drops all NaN values from the DataFrame."""
-        try:
-            return df.drop_nans(subset)
-        except Exception as e:
-            print(f"Error dropping NaNs: {e}")
-            return df  # Return the original DataFrame if dropping NaNs fails
-        
-   """ To  Write a DataFrame to CSV"""
+     """ To  Write a DataFrame to CSV"""
     def to_csv(self, df : pd.DataFrame, file_path: str(), separator: Optional[str] = ',', **kwargs):
     """ write a dataframe to a csv file """
      try:
@@ -155,7 +123,61 @@ class DataCleaner:
                 return df.to_sql(table_name, conn, if_exists='replace', index=True, **kwargs)
         except Exception as e:
             print(f"Error on writing to SQL table: {e}")
-            return False
+            return False       
+
+class FrameCleaner:
+    """
+    Handles DataFrame column renaming operations.
+    """
+    def rename(self, df: pl.DataFrame, mapping: Union[Dict[str, str], Callable[[str], str]], strict: bool = True) -> pl.DataFrame:
+        """Renames columns in a Polars DataFrame."""
+        try:
+            return df.rename(mapping, strict=strict)
+        except Exception as e:
+            print(f"Error renaming columns: {e}")
+            return df  # Return the original DataFrame if rename fails
+
+
+     def at(self, df: pd.DataFrame, row: str, column: str,  **kwargs) -> pd.DataFrame:
+        """ Access a specific cell in the DataFrame """
+        try:
+            return df.at[row, column]
+        except Exception as e:
+            print(f"Error on accessing cell: {e}")
+            return None
+
+    def iat(self, df: pd.DataFrame, row: int, column: int,  **kwargs) -> pd.DataFrame:
+        """ Access a specific cell in the DataFrame """
+        try:
+            return df.iat[row, column]
+        except Exception as e:
+            print(f"Error on accessing cell: {e}")
+            return None
+
+
+
+class DataCleaner:
+    """
+    Handles NaN removal operations for Polars DataFrames.
+    """
+    def drop_nans(self, df: pl.DataFrame, subset: Optional[Union[str, list[str]]] = None) -> pl.DataFrame:
+        """Drops all NaN values from the DataFrame."""
+        try:
+            return df.drop_nans(subset)
+        except Exception as e:
+            print(f"Error dropping NaNs: {e}")
+            return df  # Return the original DataFrame if dropping NaNs fails
+        
+
+    def drop_nan(self, df: pl.DataFrame, subset: Optional[Union[str, list[str]]] = None) -> pl.DataFrame:
+        """Drops all NaN values from the DataFrame."""
+        try:
+            return df.drop_nans(subset)
+        except Exception as e:
+            print(f"Error dropping NaNs: {e}")
+            return df  # Return the original DataFrame if dropping NaNs fails
+        
+   
 
 
 
@@ -167,6 +189,30 @@ class DataCleaner:
         except Exception as e:
             print(f"Error on reading file: {e}")
             return None
+
+
+    def merge(self, df1: pd.DataFrame, df2: pd.DataFrame, on: str, how: str = 'inner', **kwargs) -> pd.DataFrame:
+        """ Merge two DataFrames """
+        try:
+            return pd.merge(df1, df2, on=on, how=how, **kwargs)
+        except Exception as e:
+            print(f"Error on merging DataFrames: {e}")
+            return None
+
+    def concat(self, df_list: list, axis: int = 0, **kwargs) -> pd.DataFrame:
+        """ Concatenate a list of DataFrames """
+        try:
+            return pd.concat(df_list, axis=axis, **kwargs)
+        except Exception as e:
+            print(f"Error on concatenating DataFrames: {e}")
+            return None
+    def join(self, df1: pd.DataFrame, df2: pd.DataFrame, on: str, how: str = 'inner', **kwargs) -> pd.DataFrame:
+        """ Join two DataFrames """
+        try:
+            return df1.join(df2, on=on, how=how, **kwargs)
+        except Exception as e:
+            print(f"Error on joining DataFrames: {e}")
+            return None             
 
 cleaner = DataCleaner()
 reader = DataReader()
@@ -180,7 +226,12 @@ FUNCTION_MAP = {
     "to_excel": reader.to_excel,
     "to_json": reader.to_json,  
     "to_sql": reader.to_sql,
-    "head": reader.head
+    "head": reader.head,
+    "at": renamer.at,
+    "iat": renamer.iat,
+    "merge": cleaner.merge, 
+    "concat": cleaner.concat,
+    "join": cleaner.join
 }
 
 
