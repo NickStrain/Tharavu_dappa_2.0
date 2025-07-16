@@ -214,6 +214,41 @@ class DataCleaner:
             print(f"Error on joining DataFrames: {e}")
             return None             
 
+
+     def  one_hot_fast(df: pd.DataFrame, columns: list,sparse: bool = True) -> pd.DataFrame:
+        """ Perform one-hot encoding on specified columns """
+        try:
+            return pd.get_dummies(df, columns=columns, drop_first=True, sparse=sparse)
+        except Exception as e:
+            print(f"Error on performing one-hot encoding: {e}")
+            return None
+
+    
+
+    def scale_numeric(df: pd.DataFrame, columns: list) -> pd.DataFrame:
+        """ Scale numeric columns using Min-Max scaling """
+        try:
+            from sklearn.preprocessing import MinMaxScaler
+            scaler = MinMaxScaler()
+            df[columns] = scaler.fit_transform(df[columns])
+            return df
+        except Exception as e:
+            print(f"Error on scaling numeric columns: {e}")
+            return None
+
+    def  merge_rare_categories(df: pd.DataFrame, column: str, threshold: float) -> pd.DataFrame:
+        """ Merge rare categories in a categorical column """
+        try:
+            value_counts = df[column].value_counts(normalize=True)
+            rare_categories = value_counts[value_counts < threshold].index
+            df[column] = df[column].replace(rare_categories, 'Other')
+            return df
+        except Exception as e:
+            print(f"Error on merging rare categories: {e}")
+            return None        
+
+            
+
 cleaner = DataCleaner()
 reader = DataReader()
 renamer = FrameCleaner()
@@ -231,7 +266,10 @@ FUNCTION_MAP = {
     "iat": renamer.iat,
     "merge": cleaner.merge, 
     "concat": cleaner.concat,
-    "join": cleaner.join
+    "join": cleaner.join,
+    "one_hot_fast": cleaner.one_hot_fast,
+    "scale_numeric": cleaner.scale_numeric,
+    "merge_rare_categories": cleaner.merge_rare_categories
 }
 
 
