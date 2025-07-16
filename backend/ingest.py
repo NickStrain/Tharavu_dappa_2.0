@@ -203,6 +203,35 @@ class DataCleaner:
             return None
 
 
+    def drop_rows_with_threshold(df:pd.DataFrame,threshold:float)
+        """To drop the rows with missing values in the data"""
+        try:
+            df.dropna(thresh=int(threshold*len(df.columns)))
+            return df
+        except Exception as e:
+            print(f"Error on dropping the rows with missing values:{e}")
+            return None
+
+
+    def drop_cols_with_threshold(df:pd.DataFrame,threshold:float)
+        """To drop the columns with missing values"""
+        try:
+            df.dropna(axis=1,thresh=int(threshold*len(df))))
+            return df
+        except Exception as e:
+            print(f"Error on dropping the columns with missing values:{e}")
+            return None
+
+
+    def correct_typos(df:pd.DataFrame,column:str,corrections:dict)
+         """Correct the typos in a categorical column"""
+        try:
+            return df[column]=df[column].replace(corrections)
+        except Exception as e:
+            print(f"Error on correcting the type:{e}")
+            return None
+
+
 cleaner = DataCleaner()
 reader = DataReader()
 renamer = FrameCleaner()
