@@ -198,6 +198,37 @@ class DataCleaner:
         except Exception as e:
             print(f"Error filling missing values: {e}")
         return None
+    
+    """Outlier removal and transformation"""
+
+    def remove_outliers(self, df: pd.DataFrame, cols, method='zscore', thresh=3) -> Optional[pd.DataFrame]:
+        try:
+            if method == 'zscore':
+                return df[((df[cols] - df[cols].mean()) / df[cols].std()).abs().lt(thresh).all(axis=1)]
+            else:
+                Q1 = df[cols].quantile(0.25)
+                Q3 = df[cols].quantile(0.75)
+                IQR = Q3 - Q1
+                mask = ~((df[cols] < (Q1 - 1.5 * IQR)) | (df[cols] > (Q3 + 1.5 * IQR))).any(axis=1)
+                return df[mask]
+        except Exception as e:
+            print(f"Error removing outliers: {e}")
+        return None
+    
+    def convert_dates(self, df: pd.DataFrame, columns, fmt=None) -> Optional[pd.DataFrame]:
+        try: 
+            return df.assign(**{col: pd.to_datetime(df[col], format=fmt, errors='coerce') for col in columns})
+        except Exception as e: 
+            print(f"Error converting dates: {e}")
+        return None
+    
+    def extract_date_parts(self, df: pd.DataFrame, date_col: str) -> Optional[pd.DataFrame]:
+        try: 
+            return df.assign(year=df[date_col].dt.year, month=df[date_col].dt.month, day=df[date_col].dt.day)
+        except Exception as e:
+            print(f"Error extracting date parts: {e}")
+        return None
+
 
 
 
@@ -219,7 +250,9 @@ FUNCTION_MAP = {
     "drop_constant_columns":renamer.drop_constant_columns,
     "trim_whitespace":cleaner.trim_whitespace,
     "normalize_unicode":cleaner.normalize_unicode,
-
+    "remove_outliers":cleaner.remove_outliers,
+    "convert_dates":cleaner.convert_dates,
+    "extract_date_parts":cleaner.extract_date_parts,
 }
 
 
