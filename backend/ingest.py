@@ -77,6 +77,123 @@ class DataReader:
         except Exception as e:
             print(f"Error saving pickle: {e}")
 
+
+    def sort_values(self,df,column:str,ascending :bool=tool):
+        try:
+            if isinstance(df,pd.DataFrame):
+                return df.sort_value(by=column,ascending=ascending)
+            elif isinstance(pf,pl.DataFrame):
+                return df.sort(column,descending=not ascending)
+            else:
+                raise TypeError("Unsupported DataFrame type")
+        except Exception as e:
+            print(f"Error sorting DataFrame by '{column}': {e}")
+            return df
+        
+
+    def sort_index(self,df,ascending:bool=True):
+        try:
+            if isinstance(df,pd.DataFrame):
+                return df.sort_index(ascending=ascending)
+            elif isinstance(df,pl.DataFrame):
+                return df.sort(df.column[0],descending=not ascending)
+            else:
+                raise TypeError("unsupported DataFrame type")
+        except Exception as e:
+               print(f"Error sorting DataFrame by index:{e}")
+               return df
+
+
+    def drop_index_rows(self, df, index_to_drop):
+        try:
+            if isinstance(df,pd.DataFrame):
+                return df.drop(index_to_drop)
+            elif isinstance(df,pl.DataFrame):
+                return df.filter(~df.select(pl.col(df.columns[0])).to_series().is_in(index_to_drop))
+            else:
+                raise TypeError("Unsupported DataFrame type")
+        except Exception as e:
+               print(f"Error dropping rows from DataFrame:{e}")
+               return df
+
+
+    def unstack_dataframe(self, df):
+        try:
+            if isinstance(df,pl.DataFrame):
+               return df.unstack()
+            elif isinstance(pl.DataFrame):
+               return pf.pivot(index='id',column='key',values='values')
+            else:
+                raise TypeError("unsupported DataFrame type")
+        except Exception as e:
+            print(f"Error unstacking DataFrame:{e}")
+            return df
+        
+
+    def unstack_dataframe(self,df):
+        try:
+            if isinstance(df,p1.DataFrame):
+                return df.unstack()
+            elif isinstance(df, pd.DataFrame):
+                df=df.apply(lambda row:row,axis=1)
+                return
+                df.pivot(index='id',columns='key',values='values')
+            else:
+                raise TypeError("Unsupported DataFrame type")
+        except Exception as e:
+            print(f"Error unstacking DataFrame:{e}")
+            return df
+    
+    
+    def unstack_dataframe(self,df):
+        try:
+            if isinstance(df,pd.DataFrame):
+                 df=df.applymap(lambda X: X**2)
+                 return df.unstack()
+            else:
+                 raise TypeError("Unsupported DataFrame type")
+        except Exception as e:
+             print(f"Error unstacking DataFrame: {e}")
+             return df
+
+
+    def apply_function(self,df,column_name,func):
+        try:
+            if isinstance(df,pd.DataFrame):
+                 df[column_name]=df[column_name].map(func)
+                 return df
+            elif isinstance(df,pl.DataFrame):
+             if column_name in df.columns:
+                 df=df.with_columns(pl.col(column_name).map_elements(func).alias(column_name))
+                 return df
+             else:
+                print(f"column'{column_nme}'not found in polars DataFrame.")
+                return df
+            else:
+             raise TypeError("unsupported DataFrame type")
+        except Exception as e:
+             print(f"Error applying function: {e}")
+             return df
+
+
+
+    def aggregate_by_class(self,df,target_column):
+        try:
+            if isinstance(df,pd.DataFrame):
+                return
+                df.groupby(target_column).agg(['mean','min','max','count'])
+            elif isinstance(df,pl.DataFrame):
+                df_pd=df.to_pandas() 
+                aggregate_df=df_pd.groupby(target_column).agg(['mean','min','max','count'])
+                return
+                pl.from_pandas(aggregated_df) 
+            else:
+             raise TypeError("unsupported DataFrame type")
+        except Exception as e:
+             print(f"Error during aggregation: {e}")
+             return df
+
+
 class FrameCleaner:
     """
     Handles DataFrame column renaming operations.
@@ -119,7 +236,7 @@ renamer = FrameCleaner()
 
 FUNCTION_MAP = {
     "read_csv": reader.read_csv,
-    "drop_nans": cleaner.drop_nans,
+    "drop_nans": cleanerCCV.drop_nans,
     "rename": renamer.rename
 }
 
@@ -196,3 +313,36 @@ def execute_workflow(yamlstring):x
 
 
 # workflow_outputs = execute_workflow("sample.yaml")
+
+
+class DataFramecolumn():
+    def getcolumn(self,df:pl.DataFrame,column_name:str):
+        try:
+             if column_name in df.columns:
+                 return df[column_name]
+             else:
+              print(f"column'{column_name}', not found.")
+        except Exception as e:
+              print(f"Error accessing column'{column_name}': {e}")
+              return df
+
+
+class polarsDataframe():
+     def get_index(self,df:pl.DataFrame):
+        try:
+              df=df.with_row_count(name="index")
+              return df["index"].to_list()
+        except Exception as e:
+               print(f"Error generating index: {e}")
+               return df
+                 
+           
+                 
+                 
+                             
+                                                                              
+                                
+
+
+
+    
